@@ -1,0 +1,6 @@
+[package]
+name = "sms-core"
+version = "0.1.0"
+authors = ["lujo5 <lukamatosevic5@gmail.com>"]
+
+[dependencies]
