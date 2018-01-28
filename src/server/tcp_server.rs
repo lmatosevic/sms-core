@@ -18,8 +18,8 @@ impl TCPServer {
 
     pub fn start(&self) -> JoinHandle<()> {
         let address = format!("{}:{}", self.interface, self.port.to_string());
-        let listener = TcpListener::bind(address).expect("Unable to bind");
-        println!("Server ready to accept TCP connections");
+        let listener = TcpListener::bind(address).expect("Unable to bind TCP server");
+        println!("Server is ready to accept TCP connections");
 
         let server_thread = thread::spawn(move || {
             for stream in listener.incoming() {

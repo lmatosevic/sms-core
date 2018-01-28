@@ -1,7 +1,7 @@
 extern crate getopts;
 
 use self::getopts::Options;
-use std::{i16, i32};
+use std::{i16, usize};
 use std::string::String;
 use std::str::FromStr;
 
@@ -14,7 +14,7 @@ impl ArgumentParser {
         ArgumentParser { args }
     }
 
-    pub fn parse(&self) -> (Option<String>, Option<i16>, Option<String>, Option<i32>) {
+    pub fn parse(&self) -> (Option<String>, Option<i16>, Option<String>, Option<usize>) {
         let program = self.args[0].clone();
 
         let mut opts = Options::new();
@@ -22,8 +22,8 @@ impl ArgumentParser {
         opts.optflag("v", "version", "print program version");
         opts.optopt("i", "interface", "set server interface", "INTERFACE");
         opts.optopt("p", "port", "set server port", "PORT");
-        opts.optopt("d", "device", "set serial device", "DEVICE");
-        opts.optopt("b", "baud", "set serial baud rate", "BAUD");
+        opts.optopt("d", "device", "set conn device", "DEVICE");
+        opts.optopt("b", "baud", "set conn baud rate", "BAUD");
         let matches = match opts.parse(&self.args[1..]) {
             Ok(m) => { m }
             Err(f) => { panic!(f.to_string()) }
@@ -54,7 +54,7 @@ impl ArgumentParser {
                 return (None, None, None, None);
             }
         };
-        let baud_number = match i32::from_str(baud.unwrap().as_str().as_ref()) {
+        let baud_number = match usize::from_str(baud.unwrap().as_str().as_ref()) {
             Ok(v) => v,
             Err(e) => {
                 println!("Invalid baud: {}", e);
