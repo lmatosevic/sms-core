@@ -5,3 +5,4 @@ authors = ["lujo5 <lukamatosevic5@gmail.com>"]
 
 [dependencies]
 getopts = "0.2.17"
+serial = "0.4"
