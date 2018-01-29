@@ -25,7 +25,7 @@ fn main() {
     let server_thread = server.start();
 
     let elapsed = time.elapsed();
-    println!("Server started in {} ms",
+    println!("SMS Core started in {} ms",
              (elapsed.as_secs() * 1_000) + (elapsed.subsec_nanos() / 1_000_000) as u64);
 
     server_thread.join().expect("Joining server thread failed");
