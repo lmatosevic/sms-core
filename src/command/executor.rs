@@ -19,7 +19,7 @@ impl Executor {
 
     // TinySMS protocol commands
     fn parse_command(data: &mut Vec<u8>) -> Option<Box<Command + 'static>> {
-        let command_code = data.first().unwrap();
+        let command_code = data.first().unwrap(); // Check taht second value must be '\0'
         return match *command_code as char {
             '1' => Some(Box::new(CheckConnection::new())),
             '2' => Some(Box::new(SendSMS::new(
