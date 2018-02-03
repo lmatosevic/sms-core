@@ -5,7 +5,6 @@ pub mod util;
 use std::env;
 use std::time::Instant;
 use util::arguments::ArgumentParser;
-use util::serial_stream::SerialStream;
 use server::tcp_server::TCPServer;
 
 fn main() {
@@ -18,14 +17,11 @@ fn main() {
         return;
     }
 
-    let mut serial_stream = SerialStream::new(device.unwrap(), baud.unwrap());
-    serial_stream.open();
-
-    let server = TCPServer::new(interface.unwrap(), port.unwrap());
+    let mut server = TCPServer::new(interface.unwrap(), port.unwrap(), device.unwrap(), baud.unwrap());
     let server_thread = server.start();
 
     let elapsed = time.elapsed();
-    println!("SMS Core started in {} ms",
+    println!("Initialization finished in {}ms",
              (elapsed.as_secs() * 1_000) + (elapsed.subsec_nanos() / 1_000_000) as u64);
 
     server_thread.join().expect("Joining server thread failed");

@@ -1,15 +1,16 @@
 use util::serial_stream::SerialStream;
 
-pub struct Result {
-    success: bool
+pub struct Response {
+    pub success: bool,
+    pub data: Vec<u8>,
 }
 
-impl Result {
-    pub fn new(success: bool) -> Result {
-        Result { success }
+impl Response {
+    pub fn new(success: bool, data: Vec<u8>) -> Response {
+        Response { success, data }
     }
 }
 
 pub trait Command {
-    fn execute(&self, serial_stream: SerialStream) -> Result;
+    fn execute(&self, serial_stream: &mut SerialStream) -> Response;
 }

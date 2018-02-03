@@ -1,7 +1,7 @@
 use std::string::String;
 use util::serial_stream::SerialStream;
 use super::model::Command;
-use super::model::Result;
+use super::model::Response;
 
 pub struct SendSMS {
     destination: String,
@@ -9,14 +9,14 @@ pub struct SendSMS {
 }
 
 impl SendSMS {
-    fn new(destination: String, message: String) -> SendSMS {
+    pub fn new(destination: String, message: String) -> SendSMS {
         SendSMS { destination, message }
     }
 }
 
 impl Command for SendSMS {
-    fn execute(&self, serial_stream: SerialStream) -> Result {
+    fn execute(&self, serial_stream: &mut SerialStream) -> Response {
         println!("Executing send command");
-        return Result::new(true);
+        return Response::new(true, Vec::new());
     }
 }

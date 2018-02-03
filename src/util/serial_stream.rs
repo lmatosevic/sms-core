@@ -33,24 +33,44 @@ impl SerialStream {
         self.port = Option::from(port);
     }
 
-    pub fn read(&mut self) -> io::Result<String> {
+    pub fn read(&mut self) -> io::Result<Vec<u8>> {
         let mut port = self.port.take().expect("Serial port is closed");
 
-        let mut buffer = Vec::new();
-        let _ = port.read(&mut buffer);
+        let mut buffer: Vec<u8> = Vec::new();
+        let _size = SerialStream::buffered_read(&mut buffer, &mut port);
 
         self.port = Option::from(port);
-        Ok(String::from("New message"))
+        Ok(buffer)
     }
 
-    pub fn write(&mut self) -> io::Result<usize> {
+    pub fn write(&mut self, data: Vec<u8>) -> io::Result<usize> {
         let mut port = self.port.take().expect("Serial port is closed");
 
-        let buffer = Vec::new();
-        let size = port.write(&buffer[..]);
+        let write_size = port.write(&data[..]).expect("Serial write error");
+
+        // Read echo response of written data from serial stream
+        let mut buffer = vec![0; data.len() + 2]; // +2 is for CR LF (\r\n)
+        let _check_size = port.read(&mut buffer).expect("Serial read error");
 
         self.port = Option::from(port);
-        Ok(size.unwrap())
+        Ok(write_size)
+    }
+
+    fn buffered_read<T: SerialPort>(buffer: &mut Vec<u8>, port: &mut T) -> usize {
+        let buff_size: usize = 128;
+        let mut total_size: usize = 0;
+        let mut read_buff: Vec<u8> = vec![0; buff_size];
+
+        loop {
+            let read_size = port.read(&mut read_buff).expect("Failed buffer reading");
+            buffer.extend(read_buff.split(|b| *b == 0).next().unwrap().to_vec());
+            total_size += read_size;
+            if read_size < buff_size {
+                break;
+            }
+        }
+
+        return total_size;
     }
 
     fn baud_to_enum(baud: usize) -> BaudRate {
