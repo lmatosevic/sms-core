@@ -1,3 +1,4 @@
+use std::io::{Error, ErrorKind};
 use util::serial_stream::SerialStream;
 use command::model::Command;
 use command::model::Response;
@@ -11,21 +12,47 @@ impl Executor {
         serial_stream.open();
         let command = Executor::parse_command(data);
         let response = match command {
-            Some(cmd) => cmd.execute(serial_stream),
-            None => Response::new(false, Vec::from("Invalid command"))
+            Ok(cmd) => cmd.execute(serial_stream),
+            Err(e) => Response::new(false, Vec::from(format!("ERR:{}", e.to_string())))
         };
         return response;
     }
 
-    // TinySMS protocol commands
-    fn parse_command(data: &mut Vec<u8>) -> Option<Box<Command + 'static>> {
-        let command_code = data.first().unwrap(); // Check taht second value must be '\0'
+    // TinySMS protocol commands parser
+    fn parse_command(data: &mut Vec<u8>) -> Result<Box<Command + 'static>, Error> {
+        let mut groups = data.split(|b| *b == 0x00);
+        let default_cmd = vec![0x30 as u8];
+        let command_code_ref = groups.next().unwrap_or(&default_cmd);
+        if command_code_ref.len() > 1 {
+            return Err(Error::new(ErrorKind::InvalidData, "Invalid command code"));
+        }
+
+        let command_code = command_code_ref.first().unwrap();
         return match *command_code as char {
-            '1' => Some(Box::new(CheckConnection::new())),
-            '2' => Some(Box::new(SendSMS::new(
-                String::from("+3859817585"),
-                String::from("Hello world!")))),
-            _ => None
+            '1' => {
+                if groups.next().is_some() {
+                    return Err(Error::new(ErrorKind::InvalidData,
+                                          "Invalid command check"));
+                }
+                Ok(Box::new(CheckConnection::new()))
+            }
+            '2' => {
+                let dest = groups.next();
+                if !dest.is_some() {
+                    return Err(Error::new(ErrorKind::InvalidData,
+                                          "Invalid number of arguments for command send"));
+                }
+                let msg = groups.next();
+                if !msg.is_some() {
+                    return Err(Error::new(ErrorKind::InvalidData,
+                                          "Invalid number of arguments for command send"));
+                }
+                Ok(Box::new(SendSMS::new(
+                    String::from_utf8(Vec::from(dest.unwrap())).unwrap(),
+                    String::from_utf8(Vec::from(msg.unwrap())).unwrap(),
+                )))
+            }
+            _ => Err(Error::new(ErrorKind::InvalidData, "Invalid command code"))
         };
     }
 }

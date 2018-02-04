@@ -4,7 +4,9 @@ pub mod util;
 
 use std::env;
 use std::time::Instant;
+use command::executor::Executor;
 use util::arguments::ArgumentParser;
+use util::serial_stream::SerialStream;
 use server::tcp_server::TCPServer;
 
 fn main() {
@@ -17,8 +19,17 @@ fn main() {
         return;
     }
 
+    let mut serial_stream = SerialStream::new(device.clone().unwrap(), baud.clone().unwrap());
+
     let mut server = TCPServer::new(interface.unwrap(), port.unwrap(), device.unwrap(), baud.unwrap());
     let server_thread = server.start();
+    println!("TCP server started");
+
+    let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
+    println!("Serial port connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
+    if !check_resp.success {
+        panic!("Serial port connection failed");
+    }
 
     let elapsed = time.elapsed();
     println!("Initialization finished in {}ms",

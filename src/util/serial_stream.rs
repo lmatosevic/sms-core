@@ -43,10 +43,10 @@ impl SerialStream {
         Ok(buffer)
     }
 
-    pub fn write(&mut self, data: Vec<u8>) -> io::Result<usize> {
+    pub fn write(&mut self, data: &[u8]) -> io::Result<usize> {
         let mut port = self.port.take().expect("Serial port is closed");
 
-        let write_size = port.write(&data[..]).expect("Serial write error");
+        let write_size = port.write(&data).expect("Serial write error");
 
         // Read echo response of written data from serial stream
         let mut buffer = vec![0; data.len() + 2]; // +2 is for CR LF (\r\n)

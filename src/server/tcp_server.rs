@@ -51,11 +51,16 @@ impl TCPServer {
     fn handle_client(stream: TcpStream, mut serial_stream: SerialStream, mutex: Arc<Mutex<i32>>) {
         let mut reader = BufReader::new(&stream);
         let mut buffer: Vec<u8> = Vec::new();
-        reader.read_until(0x04 as u8, &mut buffer).expect("Error reading from socket");
+        let _size = reader.read_until(0x04 as u8, &mut buffer).expect("Error reading from socket");
+        let _ = buffer.pop(); // Remove 0x04 - end of transaction byte
 
         println!("Received: {}", String::from_utf8(buffer.clone()).unwrap());
 
-        let guard = mutex.lock().expect("Error locking critical segment");
+        // Mutex locks the critical segment - serial port read & write only one thread at the time
+        let guard = match mutex.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner() // Recover from mutex poisoning
+        };
         let response = Executor::run(&mut buffer, &mut serial_stream);
         drop(guard);
 
