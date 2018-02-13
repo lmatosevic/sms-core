@@ -9,7 +9,6 @@ pub struct Executor;
 
 impl Executor {
     pub fn run(data: &mut Vec<u8>, serial_stream: &mut SerialStream) -> Response {
-        serial_stream.open();
         let command = Executor::parse_command(data);
         let response = match command {
             Ok(cmd) => cmd.execute(serial_stream),
@@ -21,13 +20,13 @@ impl Executor {
     // TinySMS protocol commands parser
     fn parse_command(data: &mut Vec<u8>) -> Result<Box<Command + 'static>, Error> {
         let mut groups = data.split(|b| *b == 0x00);
-        let default_cmd = vec![0x30 as u8];
-        let command_code_ref = groups.next().unwrap_or(&default_cmd);
+        let zero_cmd = vec![0x30 as u8];
+        let command_code_ref = groups.next().unwrap_or(&zero_cmd);
         if command_code_ref.len() > 1 {
             return Err(Error::new(ErrorKind::InvalidData, "Invalid command code"));
         }
 
-        let command_code = command_code_ref.first().unwrap();
+        let command_code = command_code_ref.first().unwrap_or(&zero_cmd[0]);
         return match *command_code as char {
             '1' => {
                 if groups.next().is_some() {

@@ -14,7 +14,8 @@ fn main() {
     let (interface,
         port,
         device,
-        baud) = ArgumentParser::new(env::args().collect()).parse();
+        baud,
+        skip_check) = ArgumentParser::new(env::args().collect()).parse();
     if interface == None || port == None || device == None || baud == None {
         return;
     }
@@ -25,10 +26,12 @@ fn main() {
     let server_thread = server.start();
     println!("TCP server started");
 
-    let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
-    println!("Serial port connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
-    if !check_resp.success {
-        panic!("Serial port connection failed");
+    if !skip_check.unwrap() {
+        let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
+        println!("Serial port connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
+        if !check_resp.success {
+            panic!("Serial port connection failed");
+        }
     }
 
     let elapsed = time.elapsed();
