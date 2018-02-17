@@ -1,4 +1,5 @@
 use std::string::String;
+use std::{thread, time};
 use util::serial_stream::SerialStream;
 use super::model::Command;
 use super::model::Response;
@@ -24,6 +25,8 @@ impl Command for SendSMS {
         let _response = serial_stream.read().unwrap();
         let _size = serial_stream.write(&[0x1a]).unwrap();
         let _response = serial_stream.read().unwrap();
-        return Response::new(true, Vec::from("OK\n".as_bytes()));
+        thread::sleep(time::Duration::from_millis(1000));
+        let _ = serial_stream.read().unwrap();
+        return Response::new(true, Vec::from("OK".as_bytes()));
     }
 }

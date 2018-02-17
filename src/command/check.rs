@@ -1,3 +1,4 @@
+use std::{thread, time};
 use util::serial_stream::SerialStream;
 use super::model::Command;
 use super::model::Response;
@@ -14,6 +15,7 @@ impl Command for CheckConnection {
     fn execute(&self, serial_stream: &mut SerialStream) -> Response {
         let _size = serial_stream.write("AT\r".as_bytes()).unwrap();
         let response = serial_stream.read().unwrap();
+        thread::sleep(time::Duration::from_millis(100));
         let _ = serial_stream.read().unwrap();
         return Response::new(true, response);
     }

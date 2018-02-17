@@ -50,7 +50,10 @@ impl SerialStream {
 
         // Read echo response of written data from serial stream
         let mut buffer = vec![0 as u8; data.len() + 2]; // +2 is for CR LF (\r\n)
-        let _check_size = port.read_exact(&mut buffer).expect("Serial read error");
+        let _check_size = match port.read_exact(&mut buffer) {
+            Ok(n) => n,
+            Err(_e) => ()
+        };
 
         self.port = Option::from(port);
         Ok(write_size)
@@ -68,7 +71,7 @@ impl SerialStream {
                         break
                     }
                     n
-                },
+                }
                 Err(_e) => break
             };
             buffer.extend(read_buff.split(|b| *b == 0).next().unwrap().to_vec());
