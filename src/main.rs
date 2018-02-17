@@ -35,7 +35,7 @@ fn main() {
                                                   baud.clone().unwrap());
         serial_stream.open();
         let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
-        println!("Serial connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
+        println!("Serial connection check: {:?}", if check_resp.success { "OK" } else { "FAIL" });
         if !check_resp.success {
             panic!("Serial connection failed");
         }
