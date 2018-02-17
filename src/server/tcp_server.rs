@@ -7,22 +7,25 @@ use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use command::executor::Executor;
 use util::serial_stream::SerialStream;
+use server::thread_pool::ThreadPool;
 
 pub struct TCPServer {
     interface: String,
     port: i16,
+    pool_size: usize,
     device: String,
     baud: usize,
 }
 
 impl TCPServer {
-    pub fn new(interface: String, port: i16, device: String, baud: usize) -> TCPServer {
-        TCPServer { interface, port, device, baud }
+    pub fn new(interface: String, port: i16, pool_size: usize, device: String, baud: usize) -> TCPServer {
+        TCPServer { interface, port, pool_size, device, baud }
     }
 
     pub fn start(&mut self) -> JoinHandle<()> {
         let address = format!("{}:{}", self.interface, self.port.to_string());
         let listener = TcpListener::bind(address).expect("Unable to bind TCP server");
+        let pool = ThreadPool::new(self.pool_size.clone());
 
         let device = self.device.clone();
         let baud = self.baud.clone();
@@ -36,7 +39,7 @@ impl TCPServer {
                 match stream {
                     Ok(stream) => {
                         let peer_addr = stream.peer_addr().unwrap();
-                        thread::spawn(move || {
+                        pool.execute(move || {
                             println!("Accepted connection from {}", peer_addr);
                             TCPServer::handle_client(stream, mutex_c);
                             println!("Closed connection from {}", peer_addr);
@@ -45,6 +48,7 @@ impl TCPServer {
                     Err(e) => panic!("Connection failed: {}", e)
                 }
             }
+            drop(pool);
         });
 
         return server_thread;
@@ -55,7 +59,7 @@ impl TCPServer {
         while stream.peek(&mut b).is_ok() {
             let mut reader = BufReader::new(&stream);
             let mut buffer: Vec<u8> = Vec::new();
-            let _size = reader.read_until(0x30 as u8, &mut buffer).expect("Error reading from socket");
+            let _size = reader.read_until(0x04 as u8, &mut buffer).expect("Error reading from socket");
             let _ = buffer.pop(); // Remove 0x04 - end of transaction byte
 
             println!("Received: {}", String::from_utf8(buffer.clone()).unwrap());
