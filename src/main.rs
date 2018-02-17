@@ -21,16 +21,16 @@ fn main() {
         return;
     }
 
-    let mut serial_stream = SerialStream::new(device.clone().unwrap(),
-                                              baud.clone().unwrap());
-
-    let mut server = TCPServer::new(interface.unwrap(), port.unwrap(),
-                                    pool_size.clone().unwrap(), device.unwrap(),
-                                    baud.unwrap());
+    let mut server = TCPServer::new(interface.clone().unwrap(), port.clone().unwrap(),
+                                    pool_size.clone().unwrap(), device.clone().unwrap(),
+                                    baud.clone().unwrap());
     let server_thread = server.start();
     println!("TCP server started with pool size {}", pool_size.unwrap());
 
     if !skip_check.unwrap() {
+        let mut serial_stream = SerialStream::new(device.unwrap(),
+                                                  baud.unwrap());
+        serial_stream.open();
         let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
         println!("Serial port connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
         if !check_resp.success {
