@@ -25,16 +25,19 @@ fn main() {
                                     pool_size.clone().unwrap(), device.clone().unwrap(),
                                     baud.clone().unwrap());
     let server_thread = server.start();
-    println!("TCP server started with pool size {}", pool_size.unwrap());
+
+    println!("TCP server started on {}:{}", interface.clone().unwrap(), port.clone().unwrap());
+    println!("Thread pool size {}", pool_size.clone().unwrap());
+    println!("Serial stream on {} with baud {}", device.clone().unwrap(), baud.clone().unwrap());
 
     if !skip_check.unwrap() {
-        let mut serial_stream = SerialStream::new(device.unwrap(),
-                                                  baud.unwrap());
+        let mut serial_stream = SerialStream::new(device.clone().unwrap(),
+                                                  baud.clone().unwrap());
         serial_stream.open();
         let check_resp = Executor::run(&mut vec![0x31], &mut serial_stream);
-        println!("Serial port connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
+        println!("Serial connection: {:?}", if check_resp.success { "OK" } else { "FAIL" });
         if !check_resp.success {
-            panic!("Serial port connection failed");
+            panic!("Serial connection failed");
         }
     }
 
@@ -42,5 +45,6 @@ fn main() {
     println!("Initialization finished in {}ms",
              (elapsed.as_secs() * 1_000) + (elapsed.subsec_nanos() / 1_000_000) as u64);
 
+    println!();
     server_thread.join().expect("Joining server thread failed");
 }
