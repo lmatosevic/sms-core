@@ -28,7 +28,7 @@ Options:
 # Commands
 Curently the service only supports 2 commands to interact with GPRS shield: check and send.
 
-Commands are implementation of TinySMS protocol:[resources/TinySMS_protocol_specification.pdf](https://github.com/Lujo5/sms-core/resources/TinySMS_protocol_specification.pdf)
+Commands are implementation of TinySMS protocol:[TinySMS_protocol_specification.pdf](https://github.com/Lujo5/sms-core/blob/master/resources/TinySMS_protocol_specification.pdf)
 
 Sending commands to sms-core service is through direct TCP protocol, currently with no user authentication.
 
@@ -37,3 +37,6 @@ Sends ping to GPRS shield to check status of serial connection between sms-core 
 
 ### SEND
 Sends SMS message text to requested number in GSM format.
+
+# Example usage
+Example project for interacting with sms-core service in Node.js Express app: https://github.com/Lujo5/sms-api
