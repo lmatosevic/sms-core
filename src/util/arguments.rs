@@ -28,7 +28,7 @@ impl ArgumentParser {
         opts.optopt("t", "thread", "set thread pool size", "THREADS");
         let matches = match opts.parse(&self.args[1..]) {
             Ok(m) => { m }
-            Err(f) => { panic!(f.to_string()) }
+            Err(f) => { panic!("{}", f.to_string()) }
         };
         let mut _skip_check = false;
         if matches.opt_present("h") {

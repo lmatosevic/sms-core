@@ -18,7 +18,7 @@ impl Executor {
     }
 
     // TinySMS protocol commands parser
-    fn parse_command(data: &mut Vec<u8>) -> Result<Box<Command + 'static>, Error> {
+    fn parse_command(data: &mut Vec<u8>) -> Result<Box<dyn Command + 'static>, Error> {
         let mut groups = data.split(|b| *b == 0x00);
         let zero_cmd = vec![0x30 as u8];
         let command_code_ref = groups.next().unwrap_or(&zero_cmd);
