@@ -39,4 +39,4 @@ Sends ping to GPRS shield to check status of serial connection between sms-core 
 Sends SMS message text to requested number in GSM format.
 
 # Example usage
-Example project for interacting with sms-core service in Node.js Express app: https://github.com/Lujo5/sms-api
+Example project for interacting with sms-core service in Node.js Express app: https://github.com/lmatosevic/sms-api

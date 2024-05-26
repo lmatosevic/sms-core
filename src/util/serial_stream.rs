@@ -50,10 +50,7 @@ impl SerialStream {
 
         // Read echo response of written data from serial stream
         let mut buffer = vec![0 as u8; data.len() + 2]; // +2 is for CR LF (\r\n)
-        let _check_size = match port.read_exact(&mut buffer) {
-            Ok(n) => n,
-            Err(_e) => ()
-        };
+        let _check_size = port.read_exact(&mut buffer).unwrap_or_else(|_e| ());
 
         self.port = Option::from(port);
         Ok(write_size)

@@ -55,7 +55,7 @@ impl TCPServer {
     }
 
     fn handle_client(stream: TcpStream, mutex: Arc<Mutex<SerialStream>>) {
-        let end_byte = 0x04 as u8;
+        let end_byte = 0x04u8;
         let mut b = [0; 1];
         while stream.peek(&mut b).is_ok() {
             let mut reader = BufReader::new(&stream);
@@ -63,17 +63,14 @@ impl TCPServer {
             let _size = reader.read_until(end_byte, &mut buffer).expect("Error reading from socket");
             let eot = buffer.pop(); // Remove 0x04 - end of transaction byte
 
-            if eot.unwrap_or(0x00 as u8) != end_byte {
+            if eot.unwrap_or(0x00u8) != end_byte {
                 break;
             }
 
             println!("Received: {}", String::from_utf8(buffer.clone()).unwrap());
 
             // Mutex locks the critical segment - serial port read & write only one thread at the time
-            let mut serial_guard = match mutex.lock() {
-                Ok(guard) => guard,
-                Err(poisoned) => poisoned.into_inner() // Recover from mutex poisoning
-            };
+            let mut serial_guard = mutex.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
             let response = Executor::run(&mut buffer, &mut serial_guard);
             drop(serial_guard);
 
